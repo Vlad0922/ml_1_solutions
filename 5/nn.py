@@ -28,7 +28,7 @@ def train_val_test_split(X, y):
 def create_model_simple(activation):
     model = Sequential()
 
-    model.add(Flatten(input_shape=(3, 28, 28)))
+    model.add(Flatten(input_shape=(28, 28, 3)))
     model.add(Dense(4096, activation=activation))
     model.add(Dense(2048, activation=activation))
     model.add(Dense(1024, activation=activation))
@@ -86,7 +86,7 @@ labels = np.array(labels)
 # X_train, y_train, X_val, y_val, X_test, y_test = train_val_test_split(data, labels)
 
 def run_model_simple(activation):
-    model = KerasClassifier(build_fn=lambda: create_model_simple(activation), epochs=10, batch_size=500, validation_split=0.25, verbose=1)
+    model = KerasClassifier(build_fn=lambda: create_model_simple(activation), epochs=100, batch_size=500, validation_split=0.25, verbose=1)
     history = model.fit(data, labels)
     
     plt.figure(figsize=(15,10))
@@ -108,7 +108,7 @@ def run_model_simple(activation):
     plt.savefig('result/simple_loss_'+activation+'.png')
 
 def run_model_complex(activation):
-    model = KerasClassifier(build_fn=lambda: create_model_complex(activation), epochs=10, batch_size=500, validation_split=0.25, verbose=1)
+    model = KerasClassifier(build_fn=lambda: create_model_complex(activation), epochs=100, batch_size=500, validation_split=0.25, verbose=1)
     history = model.fit(data, labels)
     
     plt.figure(figsize=(15,10))
@@ -133,21 +133,42 @@ def run_model_complex(activation):
 #well...
 def find_dropout(d_range):
     with open('dump.txt', 'a') as f:
-        res = list()
+        # res = list()
         for d in d_range:
-            X_train, X_test, y_train, y_test = train_test_split(data, labels, train_size = 0.8, random_state=0)
-            model = KerasClassifier(build_fn=lambda: create_model_dropout(d), epochs=10, batch_size=500, validation_split=0.25, verbose=1)
-            model.fit(X_train, y_train)
+            X_train, X_test, y_train, y_test = train_test_split(data, labels, train_size = 0.9, random_state=0)
+            model = KerasClassifier(build_fn=lambda: create_model_dropout(d), epochs=50, batch_size=500, validation_split=0.11, verbose=1)
+            history = model.fit(X_train, y_train)
 
             preds = model.predict(X_test)
             acc = accuracy_score(y_test, preds)
-            res.append(acc)
-            print 'Dropout: {}, accuracy: {}'.format(d, acc)
+            
+            plt.figure(figsize=(15,10))
+            plt.plot(history.history['acc'])
+            plt.plot(history.history['val_acc'])
+            plt.title('model accuracy')
+            plt.ylabel('accuracy')
+            plt.xlabel('epoch')
+            plt.legend(['train', 'validation'], loc='upper left')
+            plt.savefig('result/drop_' + str(d) + '_accuracy.png')
+            plt.title('Test accuracy: {}'.format(acc))
+
+            plt.figure(figsize=(15,10))
+            plt.plot(history.history['loss'])
+            plt.plot(history.history['val_loss'])
+            plt.title('model loss')
+            plt.ylabel('loss')
+            plt.xlabel('epoch')
+            plt.legend(['train', 'validation'], loc='upper left')
+            plt.savefig('result/drop_' + str(d) + '_loss.png')
+            plt.title('Test accuracy: {}'.format(acc))
+
+
             del model
             gc.collect(0)
             gc.collect(1)
             gc.collect(2)
-            f.write('{}:{}\n'.format(d, acc))
+
+            # f.write('{}:{}\n'.format(d, acc))
 
     plt.figure(figsize=(15,10))
     plt.plot(d_range, res)
@@ -163,7 +184,7 @@ def find_dropout(d_range):
 # run_model_simple('tanh')
 # run_model_simple('relu')
 # run_model_simple('sigmoid')
-# run_model_complex('tanh')
-# run_model_complex('relu')
-# run_model_complex('sigmoid')
-find_dropout(np.arange(0.4, 0.55, 0.05))
+run_model_complex('tanh')
+run_model_complex('relu')
+run_model_complex('sigmoid')
+# find_dropout(np.arange(0.4, 0.525, 0.05))
