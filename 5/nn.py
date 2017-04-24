@@ -136,7 +136,7 @@ def find_dropout(d_range):
         # res = list()
         for d in d_range:
             X_train, X_test, y_train, y_test = train_test_split(data, labels, train_size = 0.9, random_state=0)
-            model = KerasClassifier(build_fn=lambda: create_model_dropout(d), epochs=50, batch_size=500, validation_split=0.11, verbose=1)
+            model = KerasClassifier(build_fn=lambda: create_model_dropout(d), epochs=50, batch_size=8, validation_split=0.11, verbose=1)
             history = model.fit(X_train, y_train)
 
             preds = model.predict(X_test)
@@ -184,7 +184,7 @@ def find_dropout(d_range):
 # run_model_simple('tanh')
 # run_model_simple('relu')
 # run_model_simple('sigmoid')
-run_model_complex('tanh')
-run_model_complex('relu')
+# run_model_complex('tanh')
+# run_model_complex('relu')
 run_model_complex('sigmoid')
 # find_dropout(np.arange(0.4, 0.525, 0.05))
